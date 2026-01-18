@@ -511,7 +511,6 @@
 <div class="controls">
   <button type="button" class="btn" id="prevBtn" onclick="prevSlide()">← Précédent</button>
   <button type="button" class="btn" id="nextBtn" onclick="nextSlide()">Suivant →</button>
-
 </div>
 
 <div class="hint">Navigation : flèches ← → ou barre espace</div>
@@ -540,32 +539,6 @@ function updateSlide() {
 function nextSlide() {
   if (currentSlide < totalSlides - 1) {
     currentSlide++;
-    let touchStartX = 0;
-    let touchStartY = 0;
-    
-    document.addEventListener('touchstart', (e) => {
-      if (!e.touches || e.touches.length === 0) return;
-      touchStartX = e.touches[0].clientX;
-      touchStartY = e.touches[0].clientY;
-    }, { passive: true });
-    
-    document.addEventListener('touchend', (e) => {
-      if (!e.changedTouches || e.changedTouches.length === 0) return;
-      const dx = e.changedTouches[0].clientX - touchStartX;
-      const dy = e.changedTouches[0].clientY - touchStartY;
-    
-      // ignorer scroll vertical
-      if (Math.abs(dy) > Math.abs(dx)) return;
-    
-      if (dx < -40) nextSlide();     // swipe gauche => suivant
-      else if (dx > 40) prevSlide(); // swipe droite => précédent
-    }, { passive: true });
-    
-    // --- Tap sur la slide pour aller au suivant (sauf sur les boutons) ---
-    document.querySelector('.container')?.addEventListener('click', (e) => {
-      if (e.target.closest('button')) return;
-      nextSlide();
-    });
     updateSlide();
   }
 }
@@ -585,6 +558,7 @@ function toggleFullscreen() {
   }
 }
 
+// CORRECTION: Event listeners ajoutés UNE SEULE FOIS au chargement de la page
 document.addEventListener('keydown', (e) => {
   if (e.key === 'ArrowRight' || e.key === ' ') {
     e.preventDefault();
@@ -603,6 +577,34 @@ document.addEventListener('keydown', (e) => {
     currentSlide = totalSlides - 1;
     updateSlide();
   }
+});
+
+// Gestion des gestes tactiles (swipe) - UNE SEULE FOIS
+let touchStartX = 0;
+let touchStartY = 0;
+
+document.addEventListener('touchstart', (e) => {
+  if (!e.touches || e.touches.length === 0) return;
+  touchStartX = e.touches[0].clientX;
+  touchStartY = e.touches[0].clientY;
+}, { passive: true });
+
+document.addEventListener('touchend', (e) => {
+  if (!e.changedTouches || e.changedTouches.length === 0) return;
+  const dx = e.changedTouches[0].clientX - touchStartX;
+  const dy = e.changedTouches[0].clientY - touchStartY;
+
+  // Ignorer le scroll vertical
+  if (Math.abs(dy) > Math.abs(dx)) return;
+
+  if (dx < -40) nextSlide();     // Swipe gauche => suivant
+  else if (dx > 40) prevSlide(); // Swipe droite => précédent
+}, { passive: true });
+
+// Tap sur la slide pour aller au suivant (sauf sur les boutons) - UNE SEULE FOIS
+document.querySelector('.container')?.addEventListener('click', (e) => {
+  if (e.target.closest('button')) return;
+  nextSlide();
 });
 
 updateSlide();
